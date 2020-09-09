@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>apiknock configurator</title>
+    <style type="text/css">
+        body {
+            font-family:'sans-serif';
+        }
+        table {
+        }
+        th, td {
+            padding: 2px;
+            border: 1px solid #000;
+            margin: 0px;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            padding: 5px;
+            width: 50%;
+            display: none;
+        }
+    </style>
+    <script type="application/javascript">
+        var configuration = null;
+        var currentFileName = null;
+
+        var outputError = function(errorMessage) {
+            /*
+             * Helper function to print a nice error message to the user.
+             */
+            var p = document.createElement('p');
+            p.textContent = errorMessage;
+            var errorLog = document.getElementById('error');
+            errorLog.insertBefore(p, errorLog.firstChild);
+            errorLog.style.display = 'block';
+        }
+
+        var buildAuthMatrix = function () {
+            if(configuration == null) {
+                outputError("Configuration is not yet loaded");
+                return;
+            }
+
+            if(!('auth_matrix' in configuration)) {
+                outputError("Invalid configuration file load (no auth_matrix in dict)");
+                return;
+            }
+
+            [].forEach.call(document.querySelectorAll('.user-th'), function (elem) {
+                // Delete old "User x" columns from table, if there are any
+                elem.parentNode.removeChild(elem);
+            });
+
+            var th;
+
+            for(var i = 1; i <= configuration['user_count']; i++) {
+                // Dynamically create user columns based on the number of defined users.
+
+                th = document.createElement("th");
+                th.textContent = 'User ' + i;
+                th.classList.add('user-th');
+                document.getElementById('authMatrixHeader').insertBefore(th, null);
+            }
+
+
+            for([path, methods] of Object.entries(configuration["auth_matrix"])) {
+                for([method, settings] of Object.entries(methods)) {
+                    addAuthMatrixEntry(path, method, settings);
+                }
+            }
+        }
+
+        var addAuthMatrixEntry = function (path, method, settings) {
+            /*
+             * Adds a new row in the AuthMatrix table
+             */
+
+            var tr = document.createElement("tr");
+            var path_td = document.createElement("td");
+            var method_td = document.createElement("td");
+
+            path_td.textContent = path;
+            tr.insertBefore(path_td, null);
+
+            method_td.textContent = method;
+            tr.insertBefore(method_td, null);
+
+            success_td = createCheckTd(path, method, 'success');
+            tr.insertBefore(success_td, null);
+
+            blocked_td = createCheckTd(path, method, 'blocked');
+            tr.insertBefore(blocked_td, null);
+
+            var user_td;
+            for (var i = 1; i <= configuration['user_count']; i++) {
+                user_td = createUserTd(path, method, i, settings['matrix']['user_' + i]);
+                tr.insertBefore(user_td, null);
+            }
+
+            document.getElementById('authMatrixBody').insertBefore(tr, null);
+        }
+
+        var createUserTd = function(path, method, user_number, checked) {
+            /*
+             * Creates the checkbox to specify if access should be possible or not.
+             */
+
+            var td = document.createElement('td');
+
+            var input = document.createElement('input');
+
+            input.setAttribute('type', 'checkbox');
+            input.setAttribute('data-path', path);
+            input.setAttribute('data-method', method);
+            input.setAttribute('data-user-number', user_number);
+            input.checked = checked;
+
+            input.addEventListener('click', togglePermission);
+
+            td.insertBefore(input, null);
+
+            return td;
+        }
+
+        var createCheckTd = function(path, method, type) {
+            /*
+             * Used to build the select item, which is used to configure the method used
+             * to determine if access was possible or not.
+             */
+            var td = document.createElement('td');
+
+            var select = document.createElement('select');
+
+            select.setAttribute('data-path', path);
+            select.setAttribute('data-method', method);
+            select.setAttribute('data-type', type);
+            select.setAttribute('data-index', 0);
+
+            check_array = configuration['auth_matrix'][path][method][type];
+            check_method = check_array[0];
+            check_value = check_array[1];
+
+            var option_http_code = document.createElement('option');
+            option_http_code.textContent = 'HTTP Code';
+            option_http_code.value = 'http_code'
+            if(check_method == 'http_code') option_http_code.selected = true;
+            select.insertBefore(option_http_code, null);
+
+            var option_http_body = document.createElement('option');
+            option_http_body.textContent = 'Response Body';
+            option_http_body.value = 'http_body';
+            if(check_method == 'http_body') option_http_body.selected = true;
+            select.insertBefore(option_http_body, null);
+
+            select.addEventListener('change', changeCheck);
+
+            td.insertBefore(select, null);
+
+            var input = document.createElement('input');
+
+            input.setAttribute('data-path', path);
+            input.setAttribute('data-method', method);
+            input.setAttribute('data-type', type);
+            input.setAttribute('data-index', 1);
+            input.value = check_value;
+
+            input.addEventListener('change', changeCheck);
+
+            td.insertBefore(input, null);
+
+            return td;
+        }
+
+        var changeCheck = function(event) {
+            /*
+             * Handles the change event of either the drop down of check method or the value
+             */
+            var target = event.target;
+
+            var path = target.dataset.path;
+            var method = target.dataset.method;
+            var type = target.dataset.type;
+            var index = target.dataset.index;
+            var value = target.value;
+
+            configuration['auth_matrix'][path][method][type][index] = value;
+        }
+
+        var togglePermission = function(event) {
+            /*
+             * Handles the click event that specifies whether access should be possible
+             */
+            var target = event.target;
+
+            var path = target.dataset.path;
+            var method = target.dataset.method;
+            var user_number = target.dataset.userNumber;
+            var checked = target.checked;
+
+            configuration['auth_matrix'][path][method]['matrix']['user_' + user_number] = checked;
+        }
+
+        var parseConfiguration = function (configString) {
+            try {
+                configuration = JSON.parse(configString);
+            } catch(e) {
+                outputError("Error loading JSON file: " + e);
+                return;
+            }
+
+            document.getElementById('knockerconf').style.display = 'block';
+            buildAuthMatrix();
+        }
+
+        var loadConfig = function(event) {
+            /*
+             * Handles file loading
+             */
+            var files = event.target.files;
+            currentFileName = files[0]['name'];
+
+            var errorLog = document.getElementById('error');
+            errorLog.innerHTML = '';
+            errorLog.style.display = 'none';
+
+            document.getElementById('authMatrixBody').innerHTML = '';
+
+            var reader = new FileReader();
+
+            reader.onload = (function(theFile) {
+                return function(e) {
+                    parseConfiguration(e.target.result);
+                };
+            })(files[0]);
+
+            reader.readAsText(files[0]);
+        }
+
+        var saveConfig = function() {
+            /*
+             * Convert the configuration object to a JSON a use a dataURI to download it to the client.
+             */
+            var dataURI = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(configuration));
+            var downloadAnchorNode = document.createElement('a');
+            downloadAnchorNode.setAttribute('href', dataURI);
+            downloadAnchorNode.setAttribute('download', currentFileName);
+            document.body.appendChild(downloadAnchorNode);
+            downloadAnchorNode.click();
+            downloadAnchorNode.remove();
+        }
+
+        var init = function() {
+            /*
+             * No jQuery, so not document.ready...
+             */
+            document.getElementById('load').addEventListener('change', loadConfig);
+            document.getElementById('save').addEventListener('click', saveConfig);
+        }
+    </script>
+</head>
+<body onload="init()">
+    <h1>ApiKnock configurator</h1>
+
+    <em>Knock, Knock! I'm there!</em>
+
+    <h2>Usage</h2>
+
+    <p>Welcome to the configurator for apiknock. Have you already created your apiknock base config file? If not please create on by using the <code>-g</code> parameter.</p>
+
+    <p>If you have done so, load the file with the below button. After this you can specify which users should have access to which resources.</p>
+
+    <p><input type="file" id="load"></p>
+
+    <p class="error" id="error"></p>
+
+    <div id="knockerconf" style="display:none;">
+        <table>
+            <thead>
+                <tr id="authMatrixHeader">
+                    <th>URL</th>
+                    <th>Method</th>
+                    <th>Success Check</th>
+                    <th>Failure Check</th>
+                </tr>
+            </thead>
+            <tbody id="authMatrixBody">
+
+            </tbody>
+        </table>
+        <p>
+            <button type="button" id="save">Save configuration</button>
+        </p>
+    </div>
+</body>
+</html>
