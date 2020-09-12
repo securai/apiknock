@@ -2,7 +2,8 @@ from importlib import reload
 from parser.openapi import OpenAPIParser
 from parser.swagger import SwaggerParser
 from modules.requester import Requester
-from modules.knockerconfig import KnockerConfig
+from modules.knockerconfig import KnockerConfig, USER_COUNT
+from modules.junit import JUnitCreator
 from optparse import OptionParser
 from modules.tester import Tester
 import sys
@@ -47,9 +48,19 @@ def main():
                           help="sets the authentication to TYPE (can be: bearer, header, cookie, query)")
     opt_parser.add_option("-n", "--auth-name", metavar="NAME", dest="auth_name", help="sets the parameter, cookie or "
                                                                                       "header name for authentication")
+    opt_parser.add_option("-o", "--out-format", metavar="FORMAT", dest="out_format", help="specifies the output FORMAT"
+                                                                                          "can be junit")
+    opt_parser.add_option("-w", "--output-file", metavar="FILE", dest="out_file", help="specifies the output FILE")
+
     opt_parser.add_option("-1", "--user-1", metavar="TOKEN", dest="user_1_token", help="TOKEN for user 1")
     opt_parser.add_option("-2", "--user-2", metavar="TOKEN", dest="user_2_token", help="TOKEN for user 2")
     opt_parser.add_option("-3", "--user-3", metavar="TOKEN", dest="user_3_token", help="TOKEN for user 3")
+    opt_parser.add_option("-4", "--user-4", metavar="TOKEN", dest="user_4_token", help="TOKEN for user 4")
+    opt_parser.add_option("-5", "--user-5", metavar="TOKEN", dest="user_5_token", help="TOKEN for user 5")
+    opt_parser.add_option("-6", "--user-6", metavar="TOKEN", dest="user_6_token", help="TOKEN for user 6")
+    opt_parser.add_option("-7", "--user-7", metavar="TOKEN", dest="user_7_token", help="TOKEN for user 7")
+    opt_parser.add_option("-8", "--user-8", metavar="TOKEN", dest="user_8_token", help="TOKEN for user 8")
+    opt_parser.add_option("-9", "--user-9", metavar="TOKEN", dest="user_9_token", help="TOKEN for user 9")
 
     (options, args) = opt_parser.parse_args()
 
@@ -102,10 +113,27 @@ def main():
         sys.exit(2)
 
     if options.generate_config_filename:
+        try:
+            user_count = int(input("So, tell me. How many users do you want to knock for? "))
+
+            if user_count < 2 or user_count > 9:
+                raise ValueError
+        except ValueError:
+            print("[E] Please provide a valid number of users... Can be between 2 and 9.")
+            sys.exit(2)
+
         config = KnockerConfig()
+        config.set(USER_COUNT, user_count)
         config.generate_config_file(parser.get_parsed_requests(), options.generate_config_filename)
         print("[+] Success: Written configuration file to %s." % options.generate_config_filename)
         sys.exit(0)
+
+    if options.out_format or options.out_file:
+        if not options.out_format and options.out_file:
+            opt_parser.error("Please provide both, output format (-o) and output filename (-w).")
+
+        if options.out_format not in ['junit']:
+            opt_parser.error("Pleas provide a valid output format. Can be 'junit'.")
 
     if options.config_filename:
         if not options.auth_type or not options.user_1_token:
@@ -113,6 +141,23 @@ def main():
 
         knocker_conf = KnockerConfig()
         knocker_conf.load_config_file(options.config_filename)
+
+        user_count = knocker_conf.get(USER_COUNT)
+
+        if user_count < 2 or user_count > 9:
+            print("[E] Invalid value of 'user_count' in config file. Can be between 2 and 9.")
+
+        token_dict = {}
+
+        for user_number in range(1, user_count + 1):
+            token = getattr(options, 'user_%d_token' % user_number)
+
+            if not token:
+                opt_parser.error("There are %d users in config file, but the token for user %d is missing." % (
+                    user_count, user_number
+                ))
+
+            token_dict['user_%d' % user_number] = token
 
         req = Requester(
             parser.get_scheme(),
@@ -124,8 +169,16 @@ def main():
             auth_name=options.auth_name,
         )
 
-        tester = Tester(parser.get_parsed_requests(), knocker_conf, req, {"user_1": options.user_1_token, "user_2": options.user_2_token})
+        tester = Tester(parser.get_parsed_requests(), knocker_conf, req, token_dict)
         tester.test_all_requests()
+
+        if options.out_file:
+            junit = JUnitCreator(tester)
+            try:
+                with open(options.out_file, "w") as out_file:
+                    out_file.write(junit.generate_xml())
+            except IOError as ex:
+                print("[E] Could not write to output file: %s" % str(ex))
 
 
 if __name__ == '__main__':

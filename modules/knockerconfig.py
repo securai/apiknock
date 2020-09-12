@@ -54,11 +54,13 @@ class KnockerConfig:
             if request["path"] not in auth_matrix:
                 auth_matrix[request["path"]] = {}
 
+            user_matrix = {}
+
+            for user_number in range(1, self.get(USER_COUNT) + 1):
+                user_matrix["user_%d" % user_number] = True if user_number == 1 else False
+
             auth_matrix[request["path"]][request["method"]] = {
-                "matrix" : {
-                    "user_1": True,
-                    "user_2": False,
-                },
+                "matrix": user_matrix,
                 "success": [
                     "http_code", 200
                 ],
