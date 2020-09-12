@@ -62,6 +62,18 @@ class Tester:
         except (AttributeError, re.error) as ex:
             raise ValueError("Could not parse %s as a valid regular expression: %s" % (value, ex))
 
+    def get_failed(self):
+        return self._failed
+
+    def get_successful(self):
+        return self._success
+
+    def get_errors(self):
+        return self._errors
+
+    def get_total_requests(self):
+        return self._actual_requests
+
     def test_all_requests(self):
         auth_matrix = self._knockerconf.get(knockerconfig.AUTH_MATRIX)
         self._actual_requests = 0
@@ -153,7 +165,7 @@ class Tester:
                             key,
                             result["message"]
                         )
-                        self._success.append(msg)
+                        self._success.append((request["path"], request["method"], key, msg))
                         print("\033[92mSuccess\033[0m (%s)" % result["message"])
                         logger.info(msg)
                     else:
@@ -163,7 +175,7 @@ class Tester:
                             key,
                             result["message"]
                         )
-                        self._failed.append(msg)
+                        self._failed.append((request["path"], request["method"], key, msg))
                         print("\033[91mFailed\033[0m (%s)" % result["message"])
                         logger.info(msg)
                 except ValueError as ex:
@@ -175,4 +187,4 @@ class Tester:
                     )
                     print("Error (%s)" % ex)
                     logger.error(msg)
-                    self._errors.append(msg)
+                    self._errors.append((request["path"], request["method"], key, msg))
