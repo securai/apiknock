@@ -33,10 +33,11 @@ class Tester:
         """
         try:
             # triggers if value is a string
+            value = int(value)
             if value < 100 or value > 599:
                 raise ValueError
         except (ValueError, TypeError):
-            raise ValueError("Provided value %s is not a valid HTTP status code (>=100 and <= 599).")
+            raise ValueError("Provided value %s is not a valid HTTP status code (>=100 and <= 599)." % value)
 
         logger.debug("Using http status code check: SHOULD: %s / IS: %s" % (value, response.status_code))
 
