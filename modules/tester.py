@@ -57,7 +57,7 @@ class Tester:
         try:
             logger.debug("Using http body check with reg exp %s" % value)
             return {
-                "success": True if re.search(value, response.content, re.MULTILINE) else False,
+                "success": True if re.search(value, response.text, re.MULTILINE) else False,
                 "message": "Regular Expression: %s" % value,
             }
         except (AttributeError, re.error) as ex:
