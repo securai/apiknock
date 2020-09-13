@@ -107,9 +107,9 @@ class Requester:
 
         return response
 
-    def process_all_requests(self):
+    def process_all_requests(self, auth_value=None):
         for request in self._requests:
-            self.process_request(request)
+            self.process_request(request, auth_value)
 
     def process_request(self, request, auth_value=None):
         base_url = "%s%s%s" % (self._scheme, self._host, self._base_path)

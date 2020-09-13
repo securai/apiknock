@@ -12,14 +12,7 @@ import logging
 
 logger = logging.getLogger('apiknock')
 
-usage = """
-##########################################
-## Secanium ApiKnock
-## .oO(knock, knock... I'm there!)
-##########################################
-
-Usage: %prog [options] <api-file>
-"""
+usage = "%prog [options] <api-file>"
 
 
 def get_parser(file_format):
@@ -33,6 +26,12 @@ def get_parser(file_format):
 
 
 def main():
+    print(""" _______ _______ _______ _______ __   _ _____ _     _ _______
+ |______ |______ |       |_____| | \  |   |   |     | |  |  |
+ ______| |______ |_____  |     | |  \_| __|__ |_____| |  |  |
+ 
+ [  knock, knock... I'm there...  -  secanium.de/apiknock   ]                                
+    """)
     opt_parser = OptionParser(usage=usage)
     opt_parser.add_option("-f", "--format", dest="format",
                           help="the api file FORMAT (can be swagger)", metavar="FORMAT")
@@ -51,6 +50,9 @@ def main():
     opt_parser.add_option("-o", "--out-format", metavar="FORMAT", dest="out_format", help="specifies the output FORMAT"
                                                                                           "can be junit")
     opt_parser.add_option("-w", "--output-file", metavar="FILE", dest="out_file", help="specifies the output FILE")
+
+    opt_parser.add_option("--fire", help="Just send out all requests once", dest="fire", default=False,
+                          action="store_true")
 
     opt_parser.add_option("-1", "--user-1", metavar="TOKEN", dest="user_1_token", help="TOKEN for user 1")
     opt_parser.add_option("-2", "--user-2", metavar="TOKEN", dest="user_2_token", help="TOKEN for user 2")
@@ -75,8 +77,8 @@ def main():
     if not file_format or file_format not in ['openapi', 'swagger']:
         opt_parser.error('Invalid API file FORMAT. Can be \'openapi\', \'swagger\'.')
 
-    if not options.config_filename and not options.generate_config_filename:
-        opt_parser.error('Please provide either a config file (-c) or generate a new one (-g)')
+    if not options.config_filename and not options.generate_config_filename and not options.fire:
+        opt_parser.error('Please provide either a config file (-c) or generate a new one (-g). Or use --fire.')
 
     if options.logfile:
         # Obviously some of the imported modules messes with the logger configuration. Shame!
@@ -111,6 +113,20 @@ def main():
     except ValueError as ex:
         print("[E] Error occurred while processing API file: %s" % ex)
         sys.exit(2)
+
+    if options.fire:
+        req = Requester(
+            parser.get_scheme(),
+            parser.get_host(),
+            parser.get_base_path(),
+            verify_certs=options.verify_certs,
+            proxy=options.proxy,
+            auth_type=options.auth_type,
+            auth_name=options.auth_name,
+            request_list=parser.get_parsed_requests(),
+        )
+
+        req.process_all_requests(options.user_1_token)
 
     if options.generate_config_filename:
         try:
