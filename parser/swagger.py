@@ -30,9 +30,7 @@ class SwaggerParser:
                 else:
                     raise ValueError("Sorry the only supported schemes are https and http at the moment.")
         else:
-            msg = "Either no host, basePath or schemes defined. Please use --override-base-url."
-            logger.warning(msg)
-            print("[W] %s" % msg)
+            logger.warning("There is either no host, basePath or schemes defined in the Swagger file.")
 
         for path, methods in self._api_parser.specification["paths"].items():
             for method in methods:
@@ -105,7 +103,7 @@ class SwaggerParser:
 
     def get_base_url(self):
         if not self._host or not self._scheme or not self._base_path:
-            raise ValueError("Base URL config is wrong: host, scheme or basePath is missing. Use --override-base-url.")
+            raise ValueError("Base URL config is wrong: host, scheme or basePath is missing.")
         return "%s%s%s" % (self._scheme, self._host, self._base_path)
 
     @staticmethod
