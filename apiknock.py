@@ -36,6 +36,9 @@ def get_base_url(options, parser):
         base_url = options.override_base_url
 
     if base_url:
+        msg = "[+] Using base URL: %s" % base_url
+        print(msg)
+        logger.info(msg)
         return base_url
     else:
         msg = "[E] Could not extract base URL from API spec. Please use --override-base-url."
