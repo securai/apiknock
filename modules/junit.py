@@ -99,17 +99,19 @@ class JUnitCreator:
         for failed in failed_list:
             failed_cases += self._generate_testcase('failure', failed)
 
-        testsuite = '<testsuite name="de.secanium.apiknock" tests="%d" errors="%d" failures="%d" id="0">%s%s</testsuite>' % (
-            total_requests,
-            len(error_list),
-            len(failed_list),
-            error_cases,
-            failed_cases
-        )
+        testsuite = '<testsuite name="de.secanium.apiknock" tests="%d" errors="%d" ' \
+                    'failures="%d" id="0">%s%s</testsuite>' % (
+                        total_requests,
+                        len(error_list),
+                        len(failed_list),
+                        error_cases,
+                        failed_cases
+                    )
 
-        return '<testsuites disabled="0" errors="%d" failures="%s" name="de.secanium.apiknock" tests="%d">%s</testsuites>' % (
-            len(error_list),
-            len(failed_list),
-            total_requests,
-            testsuite
-        )
+        return '<?xml version="1.0" encoding="UTF-8" ?><testsuites disabled="0" errors="%d" failures="%s" ' \
+               'name="de.secanium.apiknock" tests="%d">%s</testsuites>' % (
+                   len(error_list),
+                   len(failed_list),
+                   total_requests,
+                   testsuite
+               )
