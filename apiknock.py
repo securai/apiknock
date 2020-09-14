@@ -53,6 +53,7 @@ def main():
 
     opt_parser.add_option("--fire", help="Just send out all requests once", dest="fire", default=False,
                           action="store_true")
+    opt_parser.add_option("--override-base-url", dest="override_base_url", help="overrides defined base URL in spec")
 
     opt_parser.add_option("-1", "--user-1", metavar="TOKEN", dest="user_1_token", help="TOKEN for user 1")
     opt_parser.add_option("-2", "--user-2", metavar="TOKEN", dest="user_2_token", help="TOKEN for user 2")
@@ -115,10 +116,12 @@ def main():
         sys.exit(2)
 
     if options.fire:
+        if options.override_base_url:
+            base_url = options.override_base_url
+        else:
+            base_url = parser.get_base_url()
         req = Requester(
-            parser.get_scheme(),
-            parser.get_host(),
-            parser.get_base_path(),
+            base_url,
             verify_certs=options.verify_certs,
             proxy=options.proxy,
             auth_type=options.auth_type,
@@ -175,10 +178,12 @@ def main():
 
             token_dict['user_%d' % user_number] = token
 
+        if options.override_base_url:
+            base_url = options.override_base_url
+        else:
+            base_url = parser.get_base_url()
         req = Requester(
-            parser.get_scheme(),
-            parser.get_host(),
-            parser.get_base_path(),
+            base_url,
             verify_certs=options.verify_certs,
             proxy=options.proxy,
             auth_type=options.auth_type,

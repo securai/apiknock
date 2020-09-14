@@ -6,11 +6,9 @@ logger = logging.getLogger('apiknock')
 
 
 class Requester:
-    def __init__(self, scheme, host, base_path, auth_type=None, auth_name=None, request_list=None, proxy=None,
+    def __init__(self, base_url, auth_type=None, auth_name=None, request_list=None, proxy=None,
                  verify_certs=True):
-        self._scheme = scheme
-        self._host = host
-        self._base_path = base_path
+        self._base_url = base_url
         self._proxy = proxy
         self._requests = [] if not request_list else request_list
         self._verify = verify_certs
@@ -112,11 +110,9 @@ class Requester:
             self.process_request(request, auth_value)
 
     def process_request(self, request, auth_value=None):
-        base_url = "%s%s%s" % (self._scheme, self._host, self._base_path)
-
         path = request["path"]
 
-        if path.startswith('/') and base_url.endswith('/'):
+        if path.startswith('/') and self._base_url.endswith('/'):
             path = path[1:]
 
         for path_param, value in request["parameters"]["path"].items():
@@ -125,7 +121,7 @@ class Requester:
         try:
             return self.send_request(
                 request["method"],
-                base_url + path,
+                self._base_url + path,
                 query_string=request["parameters"]["query"],
                 headers=request["parameters"]["header"],
                 cookies=request["parameters"]["cookie"],
@@ -135,7 +131,7 @@ class Requester:
             )
         except (ConnectionError, ConnectionRefusedError, OSError) as ex:
             msg = "[E] Error connecting to %s%s: %s" % (
-                base_url,
+                self._base_url,
                 path,
                 ex
             )

@@ -1,5 +1,7 @@
 from prance import ResolvingParser
+import logging
 
+logger = logging.getLogger('apiknock')
 
 class SwaggerParser:
     _api_parser = None
@@ -16,14 +18,21 @@ class SwaggerParser:
         if not swagger_version or swagger_version != "2.0":
             raise TypeError("The provided file is not Swagger v2.0")
 
-        self._host = self._api_parser.specification["host"]
-        self._base_path = self._api_parser.specification["basePath"]
-        if "https" in self._api_parser.specification["schemes"]:
-            self._scheme = "https://"
-        elif "http" in self._api_parser.specification["schemes"]:
-            self._scheme = "http://"
+        if "host" in self._api_parser.specification and \
+            "basePath" in self._api_parser.specification and \
+            "schemes" in self._api_parser.specification:
+                self._host = self._api_parser.specification["host"]
+                self._base_path = self._api_parser.specification["basePath"]
+                if "https" in self._api_parser.specification["schemes"]:
+                    self._scheme = "https://"
+                elif "http" in self._api_parser.specification["schemes"]:
+                    self._scheme = "http://"
+                else:
+                    raise ValueError("Sorry the only supported schemes are https and http at the moment.")
         else:
-            raise ValueError("Sorry the only supported schemes are https and http at the moment.")
+            msg = "Either no host, basePath or schemes defined. Please use --override-base-url."
+            logger.warning(msg)
+            print("[W] %s" % msg)
 
         for path, methods in self._api_parser.specification["paths"].items():
             for method in methods:
@@ -94,14 +103,10 @@ class SwaggerParser:
 
         return self._requests
 
-    def get_host(self):
-        return self._host
-
-    def get_scheme(self):
-        return self._scheme
-
-    def get_base_path(self):
-        return self._base_path
+    def get_base_url(self):
+        if not self._host or not self._scheme or not self._base_path:
+            raise ValueError("Base URL config is wrong: host, scheme or basePath is missing. Use --override-base-path.")
+        return "%s%s%s" % (self._scheme, self._host, self._base_path)
 
     @staticmethod
     def _parse_schema(path, method, schema):
