@@ -105,7 +105,7 @@ class SwaggerParser:
 
     def get_base_url(self):
         if not self._host or not self._scheme or not self._base_path:
-            raise ValueError("Base URL config is wrong: host, scheme or basePath is missing. Use --override-base-path.")
+            raise ValueError("Base URL config is wrong: host, scheme or basePath is missing. Use --override-base-url.")
         return "%s%s%s" % (self._scheme, self._host, self._base_path)
 
     @staticmethod
