@@ -105,11 +105,11 @@ class Requester:
 
         return response
 
-    def process_all_requests(self, auth_value=None):
+    def process_all_requests(self, auth_value=None, print_request=False):
         for request in self._requests:
-            self.process_request(request, auth_value)
+            self.process_request(request, auth_value, print_request)
 
-    def process_request(self, request, auth_value=None):
+    def process_request(self, request, auth_value=None, print_request=False):
         path = request["path"]
 
         if path.startswith('/') and self._base_url.endswith('/'):
@@ -117,6 +117,13 @@ class Requester:
 
         for path_param, value in request["parameters"]["path"].items():
             path = path.replace("{%s}" % path_param, str(value))
+
+        if print_request:
+            print("[+] Sending request %s %s: %s" % (
+                request["method"].upper(),
+                self._base_url + path,
+                "Authenticated" if auth_value else "Not authenticated"
+            ))
 
         try:
             return self.send_request(

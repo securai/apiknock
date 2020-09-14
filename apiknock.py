@@ -75,7 +75,7 @@ def main():
 
     opt_parser.add_option("--fire", help="Just send out all requests once", dest="fire", default=False,
                           action="store_true")
-    opt_parser.add_option("-u", "--override-base-url", dest="override_base_url", help="overrides defined base URL in "
+    opt_parser.add_option("-u", "--override-base-url", dest="override_base_url", help="overrides base URL defined in "
                                                                                       "spec")
 
     opt_parser.add_option("-1", "--user-1", metavar="TOKEN", dest="user_1_token", help="TOKEN for user 1")
@@ -149,7 +149,7 @@ def main():
             request_list=parser.get_parsed_requests(),
         )
 
-        req.process_all_requests(options.user_1_token)
+        req.process_all_requests(options.user_1_token, print_request=True)
 
     if options.generate_config_filename:
         try:
