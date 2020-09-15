@@ -81,6 +81,7 @@ class OpenAPIParser:
 
     @staticmethod
     def _parse_schema(path, method, schema):
+        print("%s %s" % (method, path))
         try:
             primitive_parameter = OpenAPIParser._parse_primitive(schema)
 
@@ -121,6 +122,8 @@ class OpenAPIParser:
 
         if parameter.get("type") == "object":
             parsed_parameters = {}
+            if "properties" not in parameter:
+                return "secanium-object"
             for property_name, content in parameter.get("properties").items():
                 value = OpenAPIParser._parse_schema(None, None, content)
                 parsed_parameters[property_name] = value
