@@ -1,6 +1,6 @@
 from importlib import reload
-from parser.openapi import OpenAPIParser
-from parser.swagger import SwaggerParser
+from apiparser.openapi import OpenAPIParser
+from apiparser.swagger import SwaggerParser
 from modules.requester import Requester
 from modules.knockerconfig import KnockerConfig, USER_COUNT
 from modules.junit import JUnitCreator
