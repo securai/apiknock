@@ -81,7 +81,6 @@ class OpenAPIParser:
 
     @staticmethod
     def _parse_schema(path, method, schema):
-        print("%s %s" % (method, path))
         try:
             primitive_parameter = OpenAPIParser._parse_primitive(schema)
 
