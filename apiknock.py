@@ -104,6 +104,10 @@ def main():
     if not options.config_filename and not options.generate_config_filename and not options.fire:
         opt_parser.error('Please provide either a config file (-c) or generate a new one (-g). Or use --fire.')
 
+    if os.name == 'nt':
+        # Enables ANSI colors on windows-shell
+        os.system("color")
+
     if options.logfile:
         # Obviously some of the imported modules messes with the logger configuration. Shame!
         # If those two lines are removed everything is printed out to stdout as well
