@@ -92,7 +92,7 @@ class Requester:
             else:
                 raise ValueError("Authentication type %s is not supported." % self._auth_type)
 
-        if method.lower() not in ["get", "post", "put", "delete", "options"]:
+        if method.lower() not in ["get", "post", "put", "delete", "options", "patch"]:
             raise ValueError("Invalid HTTP Verb provided: %s" % method)
 
         logger.info("Sending request %s %s" % (method.upper(), url))
