@@ -144,6 +144,8 @@ class SwaggerParser:
     def _parse_object(parameter):
         if parameter.get("type") == "object":
             parsed_parameters = {}
+            if "properties" not in parameter:
+                return "secanium-object"
             for property_name, content in parameter.get("properties").items():
                 value = SwaggerParser._parse_schema(None, None, content)
                 parsed_parameters[property_name] = value
