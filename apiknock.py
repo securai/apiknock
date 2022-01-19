@@ -1,6 +1,5 @@
 from importlib import reload
 from apiparser.openapi import OpenAPIParser
-from apiparser.swagger import SwaggerParser
 from modules.requester import Requester
 from modules.knockerconfig import KnockerConfig, USER_COUNT
 from modules.junit import JUnitCreator
@@ -16,13 +15,11 @@ usage = "%prog [options] <api-file>"
 
 
 def get_parser(file_format):
-    if file_format not in ['openapi', 'swagger']:
-        raise ValueError("Invalid file format. Can be 'openapi', 'swagger'.")
+    if file_format not in ['openapi']:
+        raise ValueError("Invalid file format. Can be 'openapi'.")
 
     if file_format == 'openapi':
         return OpenAPIParser()
-    elif file_format == 'swagger':
-        return SwaggerParser()
 
 
 def get_base_url(options, parser):
@@ -56,7 +53,7 @@ def main():
     """)
     opt_parser = OptionParser(usage=usage)
     opt_parser.add_option("-f", "--format", dest="format",
-                          help="the api file FORMAT (can be swagger)", metavar="FORMAT")
+                          help="the api file FORMAT (can be openapi)", metavar="FORMAT")
     opt_parser.add_option("-i", "--insecure", action="store_false", dest="verify_certs", default=True,
                           help="ignore certificate warnings (!!INSECURE!!)")
     opt_parser.add_option("-p", "--proxy", dest="proxy", help="specify a PROXY server", metavar="PROXY")
@@ -98,8 +95,8 @@ def main():
         opt_parser.error('<api-file> is not a file.')
 
     file_format = options.format
-    if not file_format or file_format not in ['openapi', 'swagger']:
-        opt_parser.error('Invalid API file FORMAT. Can be \'openapi\', \'swagger\'.')
+    if not file_format or file_format not in ['openapi']:
+        opt_parser.error('Invalid API file FORMAT. Can be \'openapi\'.')
 
     if not options.config_filename and not options.generate_config_filename and not options.fire:
         opt_parser.error('Please provide either a config file (-c) or generate a new one (-g). Or use --fire.')
