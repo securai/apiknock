@@ -9,8 +9,8 @@
  
  `apiknock` requires the installation of following packages:
  
- * prance 
- * openapi-spec-validator
+ * yaml
+ * json
  * requests
  
 ## Usage
@@ -48,4 +48,5 @@ python apiknock.py -f swagger -c configfile.json -a bearer -1 token1 -2 token2 -
 
 ## Known Limitations
 
-* There are a few issues with parsing JSON files - please use YAML at the beginning
+* To reduce the amount of dependencies we removed the usage of prance and build our own OpenAPI-parser. Please let us 
+  know, if you find any bugs with this.  
