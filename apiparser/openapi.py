@@ -68,7 +68,6 @@ class OpenAPIParser:
                         if "application/json" not in body["content"]:
                             raise ValueError("Currently only \"applications/json\" is supported in %s %s" % (
                                 method, path))
-
                         request["body"] = self._parse_schema(path, method, body["content"]["application/json"])
                     else:
                         print("[W] No content for requestBody provided for %s %s. This request might be useless." % (
@@ -198,7 +197,10 @@ class OpenAPIParser:
         return "%s%s%s" % (self._scheme, self._host, self._base_path)
 
     def _parse_reference(self, reference):
-        reference = reference.get("$ref")
+        if "schema" in reference:
+            reference = reference.get("schema")
+        reference = reference.get("$ref", None)
+
         logger.debug("Looking for reference: %s" % reference)
 
         if not reference.startswith("#/"):
@@ -218,6 +220,12 @@ class OpenAPIParser:
 
     def _parse_schema(self, path, method, schema):
         try:
+            if "$ref" in schema or "schema" in schema and "$ref" in schema["schema"]:
+                reference = self._parse_reference(schema)
+
+                if reference:
+                    return self._parse_schema(path, method, reference)
+
             primitive_parameter = self._parse_primitive(schema)
 
             if primitive_parameter:
@@ -245,7 +253,6 @@ class OpenAPIParser:
             parameter = parameter["schema"]
         if parameter.get("type") == "array":
             value = self._parse_schema(None, None, parameter.get("items"))
-
             return value
         return None
 
@@ -313,9 +320,9 @@ class OpenAPIParser:
                 return parameter.get("minimum")
             if parameter.get("maximum", None):
                 return parameter.get("maximum")
-            return 1234
+            return "1234"
         elif parameter_type == "number":
-            return 12.3
+            return "12.3"
         elif parameter_type == "boolean":
             return True
         else:
