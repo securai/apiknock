@@ -45,11 +45,11 @@ def get_base_url(options, parser):
 
 
 def main():
-    print(""" _______ _______ _______ _______ __   _ _____ _     _ _______
- |______ |______ |       |_____| | \  |   |   |     | |  |  |
- ______| |______ |_____  |     | |  \_| __|__ |_____| |  |  |
+    print(""" _______ _______ _______ _     _  ______ _______ _____
+ |______ |______ |       |     | |_____/ |_____|   |  
+ ______| |______ |_____  |_____| |    \_ |     | __|__
  
- [  knock, knock... I'm there...  -  secanium.de/apiknock   ]                                
+ [ knock, knock... I'm there!  -  apiknock.securai.de ]                                
     """)
     opt_parser = OptionParser(usage=usage)
     opt_parser.add_option("-f", "--format", dest="format",

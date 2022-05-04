@@ -66,7 +66,7 @@ class OpenAPIParser:
 
                     if "content" in body:
                         if "application/json" not in body["content"]:
-                            raise ValueError("Currently only \"applications/json\" is supported in %s %s" % (
+                            raise ValueError("Currently only \"application/json\" is supported in %s %s" % (
                                 method, path))
                         request["body"] = self._parse_schema(path, method, body["content"]["application/json"])
                     else:
@@ -263,7 +263,7 @@ class OpenAPIParser:
         if parameter.get("type") == "object":
             parsed_parameters = {}
             if "properties" not in parameter:
-                return "secanium-object"
+                return "securai-object"
             for property_name, content in parameter.get("properties").items():
                 value = self._parse_schema(None, None, content)
                 parsed_parameters[property_name] = value
@@ -302,7 +302,7 @@ class OpenAPIParser:
 
         if parameter_type == "string":
             if parameter_format == "email":
-                return "info@secanium.de"
+                return "info@securai.de"
             elif parameter_format == "uuid":
                 return "00000000-1111-2222-3333-445566778899"
             elif parameter_format == "byte":
@@ -314,7 +314,7 @@ class OpenAPIParser:
             elif parameter_format == "date-time":
                 return "2020-06-08T19:22:00+02:00"
             else:
-                return "secanium"
+                return "securai"
         elif parameter_type == "integer":
             if parameter.get("minimum", None):
                 return parameter.get("minimum")
