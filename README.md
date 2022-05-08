@@ -2,7 +2,7 @@
 
 .oO(Knock, Knock... I'm there!)
 
-`apiknock` is a simple tool that helps developers ensure that no requests can be made
+`apiknock` is a simple tool that helps developers to ensure that no requests can be made
  which are not authorized.
  
 ## Installation
