@@ -56,8 +56,10 @@ class Requester:
             request_kwargs["headers"] = headers
 
         if body and len(body) >= 1:
-            if content_type == "json":
+            if content_type == "application/json":
                 request_kwargs["json"] = body
+            elif content_type == "multipart/form-data":
+                request_kwargs["files"] = body
             else:
                 request_kwargs["data"] = body
 
@@ -133,7 +135,7 @@ class Requester:
                 headers=request["parameters"]["header"],
                 cookies=request["parameters"]["cookie"],
                 body=request["body"] if "body" in request else None,
-                content_type="json",
+                content_type=request["content_type"] if "content_type" in request else None,
                 auth_value=auth_value
             )
         except (ConnectionError, ConnectionRefusedError, OSError) as ex:

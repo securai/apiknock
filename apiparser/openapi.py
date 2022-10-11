@@ -57,6 +57,7 @@ class OpenAPIParser:
                         "cookie": {},
                     },
                     "method": method,
+                    "content_type": None
                 }
 
                 if "requestBody" in self._api_spec["paths"][path][method]:
@@ -65,10 +66,19 @@ class OpenAPIParser:
                         body = self._parse_reference(body)
 
                     if "content" in body:
-                        if "application/json" not in body["content"]:
-                            raise ValueError("Currently only \"application/json\" is supported in %s %s" % (
-                                method, path))
-                        request["body"] = self._parse_schema(path, method, body["content"]["application/json"])
+                        content_items = body["content"].items()
+                        first_item = next(iter(content_items))
+                        content_type = first_item[0]
+                        content = first_item[1]
+
+                        supported_types = ("application/json", "multipart/form-data", "application/x-www-form-urlencoded")
+
+                        if content_type.split(";")[0] not in supported_types:       # split is for app/json;charset
+                            raise ValueError("Currently only %s is supported in %s %s" % (
+                                supported_types, method, path))
+
+                        request["content_type"] = content_type
+                        request["body"] = self._parse_schema(path, method, content)
                     else:
                         print("[W] No content for requestBody provided for %s %s. This request might be useless." % (
                             method, path))
@@ -277,6 +287,9 @@ class OpenAPIParser:
 
         if "$ref" in parameter:
             parameter = self._parse_reference(parameter)
+
+        if "properties" in parameter:
+            return None
 
         if "type" not in parameter:
             raise ValueError("Neither type nor schema defined for parameter.")
