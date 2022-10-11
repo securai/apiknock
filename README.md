@@ -24,7 +24,7 @@ the actual testing phase can be initiated.
 Use the the `-g` command line switch to generate the configuration file.
 
 ```
-python apiknock.py -f swagger -g configfile.json path-to-api-file
+python apiknock.py -f openapi -g configfile.json path-to-api-file
 ```
 
 ### Step 2: Adjust the configuration
@@ -36,14 +36,14 @@ Use the included HTML file **knockerconf.html** to adjust the configuration.
 Use the configuration file to run the tests.
 
 ```
-python apiknock.py -f swagger -c configfile.json -a bearer -1 token1 -2 token2 path-to-api-file
+python apiknock.py -f openapi -c configfile.json -a bearer -1 token1 -2 token2 path-to-api-file
 ```
 ### Step 4: JUnit Output
 
 You can add the `-o` parameter to specify an output format and use `-w` to write that output to a file. e.g.
 
 ```
-python apiknock.py -f swagger -c configfile.json -a bearer -1 token1 -2 token2 -o junit -w junit.xml path-to-api-file
+python apiknock.py -f openapi -c configfile.json -a bearer -1 token1 -2 token2 -o junit -w junit.xml path-to-api-file
 ``` 
 
 ## Known Limitations
